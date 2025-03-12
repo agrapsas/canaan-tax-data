@@ -3,21 +3,60 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <Title>Canaan Tax Calculator</Title>
 </head>
 <body>
+    <div>
+        <h1>Canaan Tax Calculator</h1>
+        <h2>2024 Tax Information</h2>
+        Municipal rate: $8.20</br>
+        County rate: $1.34</br>
+        Local education rate: $18.40</br>
+        State education rate: $1.59</br>
+        <h3>Total rate: $29.53</h3>
+    </div>
+
     <div id="costPerThousand"></div>
 
-    <label>Your home's appraised value: $</label>
-    <input type="text" id="homeValueTxt" value="223050">
-    </br>
-    <button id="calculateBtn" onclick="calculate()">Calculate increase</button>
+    <label style="margin-top: 1em">Your home's appraised value: $</label>
+    <input style="margin-top: 1em" type="text" id="homeValueTxt" value="223050">
+    <button style="margin-top: 1em" id="calculateBtn" onclick="calculate()">Calculate increase</button>
 
     <div id="newValue"></div>
 
-    <div><small>Note: all values are rounded to 2 decimal places</small></div>
+    <div style="margin-top: 2em"><small>Note: all values are rounded to 2 decimal places. New tax information excludes county, local edu, and state edu; so, expect this to be more.</small></div>
 
     <script type="text/javascript">
-        const increaseMapPerThousand = {
+        const RATE_BREAKDOWN_2023 = {
+            "MUNI": 6.56,
+            "COUNTY": 1.39,
+            "LOCAL_EDU": 17.70,
+            "STATE_EDU": 1.50
+        };
+
+        const RATE_BREAKDOWN_2024 = {
+            "MUNI": 8.20,
+            "COUNTY": 1.34,
+            "LOCAL_EDU": 18.40,
+            "STATE_EDU": 1.59
+        };
+
+        const PERCENTAGE_CHANGE_RATE = Object.keys(RATE_BREAKDOWN_2023).reduce((a, k) => {
+            a[k] = (RATE_BREAKDOWN_2024[k] - RATE_BREAKDOWN_2023[k]) / RATE_BREAKDOWN_2023[k]
+            return a;
+        }, {});
+
+        const FORWARD_PROJECTED_RATE = Object.keys(RATE_BREAKDOWN_2023).reduce((a, k) => {
+            a[k] = RATE_BREAKDOWN_2024[k] * (1 + PERCENTAGE_CHANGE_RATE[k]);
+            return a;
+        }, {});
+
+        console.log("Percentage change YoY", PERCENTAGE_CHANGE_RATE);
+
+        // This is naive. But, will be left here as an idea of what can be done.
+        console.log("Forward projection 2025", FORWARD_PROJECTED_RATE);
+
+        const INCREASE_PER_THOUSAND = {
             "HIGHWAY_CAPITAL": 0.02,
             "FIRE_TRUCK": 0.34,
             "TRANSFER_STATION": 0.02,
@@ -32,9 +71,12 @@
             "TRANSIT": 0.3
         };
 
-        const totalIncreaseDollars = Object.values(increaseMapPerThousand).reduce((a, v) => a + v, 0).toFixed(2);
+        const CURRENT_RATE = 29.53;
+        const MUNICIPAL_RATE = 8.20;
 
-        document.getElementById("costPerThousand").append(`New cost per thousand of home value (based on voting): $${totalIncreaseDollars}`);
+        const totalIncreaseDollars = Object.values(INCREASE_PER_THOUSAND).reduce((a, v) => a + v, 0);
+
+        document.getElementById("costPerThousand").append(`New increase per thousand of home value (based on voting): $${totalIncreaseDollars.toFixed(2)}. New total municipal rate: $${(totalIncreaseDollars + MUNICIPAL_RATE).toFixed(2)}`);
 
         function calculate() {
 
@@ -46,10 +88,12 @@
 
             console.log("Appraised value converted", appraisedDollars);
 
-            const increase = ((appraisedDollars / 1000) * totalIncreaseDollars).toFixed(2);
-            const newAppraised = appraisedDollars + increase;
-
-            document.getElementById("newValue").innerHTML = `<div>Increase: $${increase}</div>`;
+            const increase = ((appraisedDollars / 1000) * totalIncreaseDollars);
+            const currentTaxes = ((appraisedDollars / 1000) * CURRENT_RATE);
+            const newRate = totalIncreaseDollars + CURRENT_RATE;
+            console.log("New total rate", newRate);
+            const newTaxes = ((appraisedDollars / 1000) * newRate);
+            document.getElementById("newValue").innerHTML = `<div><h3>Increase: $${increase.toFixed(2)}</h3></div style="padding-top: 0.5em"><div><b>2024 Tax:</b> $${currentTaxes.toFixed(2)}</div><div style="padding-top: 0.5em"><b>2025 Tax</b> (estimated, without other increases): $${newTaxes.toFixed(2)}`;
         }
     </script>
 </body>
