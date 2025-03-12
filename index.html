@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<html>
+<body>
+    <div id="costPerThousand"></div>
+
+    <label>Your home's appraised value: $</label>
+    <input type="text" id="homeValueTxt" value="223050">
+    </br>
+    <button id="calculateBtn" onclick="calculate()">Calculate increase</button>
+
+    <div id="newValue"></div>
+
+    <div><small>Note: all values are rounded to 2 decimal places</small></div>
+
+    <script type="text/javascript">
+        const increaseMapPerThousand = {
+            "HIGHWAY_CAPITAL": 0.02,
+            "FIRE_TRUCK": 0.34,
+            "TRANSFER_STATION": 0.02,
+            "EMS": 0.18,
+            "POLICE_FUND": 0.13,
+            "BRIDGE_FUND": 0.12,
+            "BEHAVIORAL": 0.01,
+            "SENIOR_CITIZENS": 0.03,
+            "HEALTH_COUNCIL": 0.01,
+            "ACTION_PROGRAM": 0.02,
+            "WISE": 0.0,
+            "TRANSIT": 0.3
+        };
+
+        const totalIncreaseDollars = Object.values(increaseMapPerThousand).reduce((a, v) => a + v, 0).toFixed(2);
+
+        document.getElementById("costPerThousand").append(`New cost per thousand of home value (based on voting): $${totalIncreaseDollars}`);
+
+        function calculate() {
+
+            const appraisedValue = document.getElementById("homeValueTxt").value;
+
+            console.log("Appraised value", appraisedValue);
+
+            const appraisedDollars = parseInt(appraisedValue);
+
+            console.log("Appraised value converted", appraisedDollars);
+
+            const increase = ((appraisedDollars / 1000) * totalIncreaseDollars).toFixed(2);
+            const newAppraised = appraisedDollars + increase;
+
+            document.getElementById("newValue").innerHTML = `<div>Increase: $${increase}</div>`;
+        }
+    </script>
+</body>
+</html>
